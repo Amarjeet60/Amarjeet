@@ -1,0 +1,23 @@
+name: CI Pipeline (macOS)
+on: [push]
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+      - run: npm ci
+      - name: Start MongoDB
+        run: |
+          brew tap mongodb/brew
+          brew install mongodb-community@6.0
+          brew services start mongodb-community
+      - name: Run tests
+        run: npm test
+        env:
+          DB_URI: 'mongodb://localhost:27017/testdb'
