@@ -6,17 +6,28 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v3
+      
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18'
-          cache: 'npm'
-      - run: npm ci
+          
+      # First generate lock file if missing
+      - name: Install dependencies (with fallback)
+        run: |
+          if [ -f package-lock.json ] || [ -f yarn.lock ]; then
+            npm ci
+          else
+            npm install
+          fi
+          
       - name: Start MongoDB
         run: |
           brew tap mongodb/brew
           brew install mongodb-community@6.0
           brew services start mongodb-community
+          sleep 10
+          
       - name: Run tests
         run: npm test
         env:
